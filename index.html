@@ -15,9 +15,12 @@
     font-family: -apple-system, "Segoe UI", "Malgun Gothic", sans-serif;
     background: #f5f4f1;
     color: #2b2b2b;
+    margin: 0;
+    padding: 20px 16px 60px;
+  }
+  .wrap {
     max-width: 420px;
     margin: 0 auto;
-    padding: 20px 16px 60px;
   }
   h1 {
     font-size: 19px;
@@ -113,12 +116,35 @@
     text-align: center;
     padding: 24px 0;
   }
+
+  /* 화면이 넓으면(PC) 입력칸과 목록을 좌우로 나눠 보여줘요 */
+  @media (min-width: 760px) {
+    body { padding: 36px 24px 60px; }
+    .wrap { max-width: 880px; }
+    h1 { font-size: 23px; }
+    .summary { font-size: 16px; margin-bottom: 24px; }
+    .cols {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+    form {
+      position: sticky;
+      top: 24px;
+      margin-bottom: 0;
+    }
+  }
 </style>
 </head>
 <body>
 
+<div class="wrap">
+
 <h1>독자님의 독서 기록이에요</h1>
 <div class="summary">이번 달에 책을 <strong id="month-count">0</strong>권 읽었어요</div>
+
+<div class="cols">
 
 <form id="book-form">
   <label for="title">제목</label>
@@ -137,6 +163,9 @@
 </form>
 
 <ul id="book-list"></ul>
+
+</div><!-- /.cols -->
+</div><!-- /.wrap -->
 
 <script>
   const STORAGE_KEY = 'readingLog';
