@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>독서 기록</title>
+<meta name="theme-color" content="#2b6cb0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="독서 기록">
+<link rel="manifest" href="manifest.json">
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "Segoe UI", "Malgun Gothic", sans-serif;
+    background: #f5f4f1;
+    color: #2b2b2b;
+    max-width: 420px;
+    margin: 0 auto;
+    padding: 20px 16px 60px;
+  }
+  h1 {
+    font-size: 19px;
+    margin-bottom: 4px;
+  }
+  .summary {
+    font-size: 15px;
+    color: #555;
+    margin-bottom: 18px;
+  }
+  .summary strong {
+    color: #2b6cb0;
+    font-size: 17px;
+  }
+  form {
+    background: #fff;
+    border: 1px solid #e3e1db;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 20px;
+  }
+  form label {
+    display: block;
+    font-size: 13px;
+    color: #666;
+    margin: 10px 0 4px;
+  }
+  form label:first-of-type {
+    margin-top: 0;
+  }
+  form input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #d8d6d0;
+    border-radius: 8px;
+    font-size: 15px;
+  }
+  form button {
+    margin-top: 14px;
+    width: 100%;
+    padding: 12px;
+    background: #2b6cb0;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    cursor: pointer;
+  }
+  form button:active { background: #255a92; }
+
+  ul#book-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .book-item {
+    background: #fff;
+    border: 1px solid #e3e1db;
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 10px;
+    position: relative;
+  }
+  .book-title {
+    font-weight: 600;
+    font-size: 15px;
+    padding-right: 50px;
+  }
+  .book-meta {
+    font-size: 13px;
+    color: #777;
+    margin-top: 2px;
+  }
+  .book-note {
+    font-size: 13px;
+    color: #444;
+    margin-top: 6px;
+    white-space: pre-wrap;
+  }
+  .delete-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: none;
+    border: none;
+    color: #b94a4a;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .empty {
+    color: #999;
+    font-size: 14px;
+    text-align: center;
+    padding: 24px 0;
+  }
+</style>
+</head>
+<body>
+
+<h1>독자님의 독서 기록이에요</h1>
+<div class="summary">이번 달에 책을 <strong id="month-count">0</strong>권 읽었어요</div>
+
+<form id="book-form">
+  <label for="title">제목</label>
+  <input type="text" id="title" required>
+
+  <label for="author">저자</label>
+  <input type="text" id="author">
+
+  <label for="dateFinished">다 읽은 날짜</label>
+  <input type="date" id="dateFinished" required>
+
+  <label for="note">한 줄 메모</label>
+  <input type="text" id="note" placeholder="간단한 느낌을 적어주세요">
+
+  <button type="submit">책 추가할게요</button>
+</form>
+
+<ul id="book-list"></ul>
+
+<script>
+  const STORAGE_KEY = 'readingLog';
+
+  function loadBooks() {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  }
+
+  function saveBooks(books) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(books));
+  }
+
+  function formatDate(dateStr) {
+    const [y, m, d] = dateStr.split('-');
+    return `${y}.${m}.${d}`;
+  }
+
+  function countThisMonth(books) {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+    return books.filter(b => {
+      const [y, m] = b.dateFinished.split('-').map(Number);
+      return y === year && (m - 1) === month;
+    }).length;
+  }
+
+  function render() {
+    const books = loadBooks();
+    const list = document.getElementById('book-list');
+    document.getElementById('month-count').textContent = countThisMonth(books);
+
+    list.innerHTML = '';
+    if (books.length === 0) {
+      list.innerHTML = '<li class="empty">아직 기록한 책이 없어요</li>';
+      return;
+    }
+
+    books.forEach(book => {
+      const li = document.createElement('li');
+      li.className = 'book-item';
+      li.innerHTML = `
+        <button class="delete-btn" data-id="${book.id}">삭제할게요</button>
+        <div class="book-title">${escapeHtml(book.title)}</div>
+        <div class="book-meta">${escapeHtml(book.author || '저자 미상')} · ${formatDate(book.dateFinished)}</div>
+        ${book.note ? `<div class="book-note">${escapeHtml(book.note)}</div>` : ''}
+      `;
+      list.appendChild(li);
+    });
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  document.getElementById('book-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const title = document.getElementById('title').value.trim();
+    const author = document.getElementById('author').value.trim();
+    const dateFinished = document.getElementById('dateFinished').value;
+    const note = document.getElementById('note').value.trim();
+
+    if (!title || !dateFinished) return;
+
+    const books = loadBooks();
+    books.unshift({
+      id: Date.now().toString(),
+      title, author, dateFinished, note
+    });
+    saveBooks(books);
+    e.target.reset();
+    document.getElementById('dateFinished').value = todayStr();
+    render();
+  });
+
+  document.getElementById('book-list').addEventListener('click', (e) => {
+    if (!e.target.classList.contains('delete-btn')) return;
+    const id = e.target.dataset.id;
+    if (!confirm('이 책 기록을 삭제할까요?')) return;
+    const books = loadBooks().filter(b => b.id !== id);
+    saveBooks(books);
+    render();
+  });
+
+  function todayStr() {
+    const now = new Date();
+    const m = String(now.getMonth() + 1).padStart(2, '0');
+    const d = String(now.getDate()).padStart(2, '0');
+    return `${now.getFullYear()}-${m}-${d}`;
+  }
+
+  document.getElementById('dateFinished').value = todayStr();
+  render();
+</script>
+
+</body>
+</html>
