@@ -10,67 +10,130 @@
 <meta name="apple-mobile-web-app-title" content="독서 기록">
 <link rel="manifest" href="manifest.json">
 <style>
+  /* 색은 5가지만 씁니다.
+     ink(중요한 글자) / muted(보조 글자) / accent(핵심 숫자·주요 버튼) /
+     danger(삭제) / line(테두리) */
+  :root {
+    --ink: #2a2a28;
+    --muted: #5f5c57;
+    --accent: #2b6cb0;
+    --accent-dark: #22548a;
+    --danger: #b94a4a;
+    --line: #e0ddd6;
+    --field-line: #8f897e;
+    --bg: #f5f4f1;
+
+    /* 간격은 4의 배수 4단계만 씁니다 */
+    --s1: 8px;
+    --s2: 16px;
+    --s3: 24px;
+    --s4: 32px;
+  }
+
   * { box-sizing: border-box; }
+
   body {
     font-family: -apple-system, "Segoe UI", "Malgun Gothic", sans-serif;
-    background: #f5f4f1;
-    color: #2b2b2b;
+    background: var(--bg);
+    color: var(--ink);
     margin: 0;
-    padding: 20px 16px 60px;
+    padding: var(--s3) var(--s2) var(--s4);
+    /* 글자 크기는 4단계만 씁니다: 40 / 17 / 15 / 13 */
+    font-size: 15px;
+    line-height: 1.5;
   }
   .wrap {
     max-width: 420px;
     margin: 0 auto;
   }
+
   h1 {
-    font-size: 19px;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--muted);
+    margin: 0 0 var(--s2);
+  }
+
+  /* ── 이번 달 권수: 이 화면의 주인공 ── */
+  .hero {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: var(--s3) var(--s2);
+    margin-bottom: var(--s4);
+    text-align: center;
+    box-shadow: 0 1px 2px rgba(0,0,0,.04);
+  }
+  .hero-label {
+    font-size: 13px;
+    color: var(--muted);
     margin-bottom: 4px;
   }
-  .summary {
-    font-size: 15px;
-    color: #555;
-    margin-bottom: 18px;
+  .hero-num {
+    color: var(--accent);
+    font-size: 40px;
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -1px;
   }
-  .summary strong {
-    color: #2b6cb0;
+  .hero-num span {
     font-size: 17px;
+    font-weight: 600;
+    margin-left: 2px;
+  }
+
+  /* ── 입력칸 ── */
+  .section-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted);
+    margin: 0 0 var(--s1);
   }
   form {
     background: #fff;
-    border: 1px solid #e3e1db;
-    border-radius: 12px;
-    padding: 16px;
-    margin-bottom: 20px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: var(--s2);
+    margin-bottom: var(--s4);
+    box-shadow: 0 1px 2px rgba(0,0,0,.04);
   }
   form label {
     display: block;
     font-size: 13px;
-    color: #666;
-    margin: 10px 0 4px;
+    color: var(--muted);
+    margin: var(--s2) 0 4px;
   }
-  form label:first-of-type {
-    margin-top: 0;
-  }
+  form label:first-of-type { margin-top: 0; }
   form input {
     width: 100%;
-    padding: 10px;
-    border: 1px solid #d8d6d0;
+    padding: 11px 12px;
+    border: 1px solid var(--field-line);
     border-radius: 8px;
-    font-size: 15px;
+    /* 16px 미만이면 아이폰에서 입력할 때 화면이 확대돼요 */
+    font-size: 16px;
+    color: var(--ink);
+    background: #fff;
+  }
+  form input:focus {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+    border-color: var(--accent);
   }
   form button {
-    margin-top: 14px;
+    margin-top: var(--s3);
     width: 100%;
-    padding: 12px;
-    background: #2b6cb0;
+    min-height: 48px;
+    background: var(--accent);
     color: #fff;
     border: none;
     border-radius: 8px;
     font-size: 15px;
+    font-weight: 600;
     cursor: pointer;
   }
-  form button:active { background: #255a92; }
+  form button:hover { background: var(--accent-dark); }
 
+  /* ── 목록 ── */
   ul#book-list {
     list-style: none;
     padding: 0;
@@ -78,60 +141,87 @@
   }
   .book-item {
     background: #fff;
-    border: 1px solid #e3e1db;
-    border-radius: 12px;
-    padding: 14px;
-    margin-bottom: 10px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: var(--s2);
+    /* 삭제 버튼 자리를 넉넉히 비워 둬요 */
+    padding-right: 60px;
+    margin-bottom: var(--s1);
     position: relative;
+    box-shadow: 0 1px 2px rgba(0,0,0,.04);
   }
   .book-title {
+    font-size: 17px;
     font-weight: 600;
-    font-size: 15px;
-    padding-right: 50px;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
   }
   .book-meta {
     font-size: 13px;
-    color: #777;
+    color: var(--muted);
     margin-top: 2px;
   }
   .book-note {
-    font-size: 13px;
-    color: #444;
-    margin-top: 6px;
+    font-size: 15px;
+    color: var(--ink);
+    margin-top: var(--s1);
     white-space: pre-wrap;
+    overflow-wrap: anywhere;
   }
+  /* 손가락으로 누를 수 있게 최소 44×44 확보 */
   .delete-btn {
     position: absolute;
-    top: 12px;
-    right: 12px;
+    top: 6px;
+    right: 6px;
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     background: none;
     border: none;
-    color: #b94a4a;
+    border-radius: 8px;
+    color: var(--danger);
     font-size: 13px;
     cursor: pointer;
   }
-  .empty {
-    color: #999;
-    font-size: 14px;
-    text-align: center;
-    padding: 24px 0;
+  .delete-btn:hover { background: #faf0f0; }
+  .delete-btn:focus-visible {
+    outline: 2px solid var(--danger);
+    outline-offset: -2px;
   }
 
-  /* 화면이 넓으면(PC) 입력칸과 목록을 좌우로 나눠 보여줘요 */
+  .empty {
+    color: var(--muted);
+    font-size: 15px;
+    text-align: center;
+    padding: var(--s4) var(--s2);
+    border: 1px dashed var(--line);
+    border-radius: 14px;
+  }
+
+  /* ── 화면이 넓으면(PC) 입력칸과 목록을 좌우로 나눠요 ── */
   @media (min-width: 760px) {
-    body { padding: 36px 24px 60px; }
+    body { padding: var(--s4) var(--s3); }
     .wrap { max-width: 880px; }
-    h1 { font-size: 23px; }
-    .summary { font-size: 16px; margin-bottom: 24px; }
+    .hero {
+      display: flex;
+      align-items: baseline;
+      justify-content: center;
+      gap: var(--s1);
+      text-align: left;
+      padding: var(--s2) var(--s3);
+    }
+    .hero-label { margin-bottom: 0; }
     .cols {
       display: grid;
       grid-template-columns: 300px 1fr;
-      gap: 24px;
+      gap: var(--s3);
       align-items: start;
     }
     form {
       position: sticky;
-      top: 24px;
+      top: var(--s3);
       margin-bottom: 0;
     }
   }
@@ -141,30 +231,36 @@
 
 <div class="wrap">
 
-<h1>독자님의 독서 기록이에요</h1>
-<div class="summary">이번 달에 책을 <strong id="month-count">0</strong>권 읽었어요</div>
+  <h1>독자님의 독서 기록이에요</h1>
 
-<div class="cols">
+  <div class="hero">
+    <div class="hero-label">이번 달에 읽은 책</div>
+    <div class="hero-num"><span id="month-count">0</span><span>권</span></div>
+  </div>
 
-<form id="book-form">
-  <label for="title">제목</label>
-  <input type="text" id="title" required>
+  <div class="cols">
 
-  <label for="author">저자</label>
-  <input type="text" id="author">
+    <form id="book-form">
+      <h2 class="section-title">다 읽은 책을 적어주세요</h2>
 
-  <label for="dateFinished">다 읽은 날짜</label>
-  <input type="date" id="dateFinished" required>
+      <label for="title">제목</label>
+      <input type="text" id="title" required>
 
-  <label for="note">한 줄 메모</label>
-  <input type="text" id="note" placeholder="간단한 느낌을 적어주세요">
+      <label for="author">저자</label>
+      <input type="text" id="author">
 
-  <button type="submit">책 추가할게요</button>
-</form>
+      <label for="dateFinished">다 읽은 날짜</label>
+      <input type="date" id="dateFinished" required>
 
-<ul id="book-list"></ul>
+      <label for="note">한 줄 메모</label>
+      <input type="text" id="note" placeholder="간단한 느낌을 적어주세요">
 
-</div><!-- /.cols -->
+      <button type="submit">책 추가할게요</button>
+    </form>
+
+    <ul id="book-list"></ul>
+
+  </div><!-- /.cols -->
 </div><!-- /.wrap -->
 
 <script>
@@ -201,7 +297,7 @@
 
     list.innerHTML = '';
     if (books.length === 0) {
-      list.innerHTML = '<li class="empty">아직 기록한 책이 없어요</li>';
+      list.innerHTML = '<li class="empty">아직 기록한 책이 없어요.<br>다 읽은 책을 한 권 적어보세요.</li>';
       return;
     }
 
@@ -209,7 +305,7 @@
       const li = document.createElement('li');
       li.className = 'book-item';
       li.innerHTML = `
-        <button class="delete-btn" data-id="${book.id}">삭제할게요</button>
+        <button class="delete-btn" data-id="${book.id}" aria-label="${escapeHtml(book.title)} 기록 삭제">삭제</button>
         <div class="book-title">${escapeHtml(book.title)}</div>
         <div class="book-meta">${escapeHtml(book.author || '저자 미상')} · ${formatDate(book.dateFinished)}</div>
         ${book.note ? `<div class="book-note">${escapeHtml(book.note)}</div>` : ''}
@@ -245,11 +341,14 @@
   });
 
   document.getElementById('book-list').addEventListener('click', (e) => {
-    if (!e.target.classList.contains('delete-btn')) return;
-    const id = e.target.dataset.id;
-    if (!confirm('이 책 기록을 삭제할까요?')) return;
-    const books = loadBooks().filter(b => b.id !== id);
-    saveBooks(books);
+    const btn = e.target.closest('.delete-btn');
+    if (!btn) return;
+    const id = btn.dataset.id;
+    const book = loadBooks().find(b => b.id === id);
+    if (!book) return;
+    // 어떤 책을 지우는지 제목을 보여줘요
+    if (!confirm(`「${book.title}」 기록을 삭제할까요?`)) return;
+    saveBooks(loadBooks().filter(b => b.id !== id));
     render();
   });
 
